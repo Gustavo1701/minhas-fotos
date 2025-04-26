@@ -14,9 +14,19 @@ app.use(bodyParser.json()); // permite interpretar JSON no body das requisiçõe
 // Rotas
 app.use('/localizacoes', routes);
 
-// Inicia o servidor e sincroniza o banco
-db.sequelize.sync().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Servidor rodando na porta ${PORT}`);
+// Verifica a conexão com o banco de dados
+db.sequelize.authenticate()
+  .then(() => {
+    console.log('Conexão com o banco de dados foi bem-sucedida!');
+    // Sincroniza o banco e inicia o servidor
+    db.sequelize.sync().then(() => {
+      app.listen(PORT, () => {
+        console.log(`Servidor rodando na porta ${PORT}`);
+      });
+    }).catch((error) => {
+      console.error('Erro ao sincronizar o banco de dados:', error);
+    });
+  })
+  .catch((error) => {
+    console.error('Não foi possível conectar ao banco de dados:', error);
   });
-});
