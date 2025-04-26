@@ -1,27 +1,23 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const routes = require('./routes/localizacao.routes.js'); // ajuste conforme sua estrutura
-const db = require('../backend/config/db.config.js'); // conexão com o banco de dados
+const routes = require('./routes/localizacao.routes.js');
+const db = require('../backend/config/db.config.js');
 
 const app = express();
 const port = process.env.PORT || 4000;
-app.listen(port, () => {
-  console.log(`Servidor rodando na porta ${port}`);
-});
 
 // Middlewares
-app.use(cors()); // permite requisições de outros domínios (como seu frontend)
-app.use(bodyParser.json()); // permite interpretar JSON no body das requisições
+app.use(cors());
+app.use(bodyParser.json());
 
 // Rotas
 app.use('/localizacoes', routes);
 
-// Verifica a conexão com o banco de dados
+// Verifica a conexão com o banco de dados e inicia o servidor
 db.sequelize.authenticate()
   .then(() => {
     console.log('Conexão com o banco de dados foi bem-sucedida!');
-    // Sincroniza o banco e inicia o servidor
     db.sequelize.sync().then(() => {
       app.listen(port, () => {
         console.log(`Servidor rodando na porta ${port}`);
