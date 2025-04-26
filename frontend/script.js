@@ -61,11 +61,10 @@ function iniciarSlideshow() {
     slideshow.className = 'slideshow';
 
     const imagens = [
-        '../frontend/src/img/01.jpg',
-        '../frontend/src/img/02.jpg',
-        '../frontend/src/img/03.jpg',
-        '../frontend/src/img/04.jpg',
-        // Adicione mais imagens se quiser
+        'src/img/01.jpg',
+        'src/img/02.jpg',
+        'src/img/03.jpg',
+        'src/img/04.jpg',
     ];
 
     imagens.forEach((src, index) => {
