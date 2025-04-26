@@ -7,6 +7,7 @@ const path = require('path');  // Importa o módulo path do Node.js
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+const Localizacao = db.sequelize.models.Localizacao;
 
 // Middlewares
 app.use(cors());
@@ -16,7 +17,26 @@ app.use(express.json()); // substitui body-parser
 app.use(express.static(path.join(__dirname, '../frontend')));
 
 // Rotas
-app.use('/localizacoes', routes);
+app.post('/localizacoes', async (req, res) => {
+  const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  const { latitude, longitude } = req.body;
+
+  console.log('IP recebido no backend:', ip);
+  console.log('Latitude:', latitude, 'Longitude:', longitude);
+
+  try {
+    const novaLocalizacao = await Localizacao.create({
+      ip: ip,
+      latitude: latitude,
+      longitude: longitude
+    });
+
+    res.status(200).json({ message: 'Localização salva com sucesso!', localizacao: novaLocalizacao });
+  } catch (error) {
+    console.error('Erro ao salvar localização:', error);
+    res.status(500).json({ message: 'Erro ao salvar localização.' });
+  }
+});
 
 // Rota para página principal: retorna o index.html do frontend
 app.get('/', (req, res) => {

@@ -2,22 +2,11 @@ async function success(pos) {
     const lat = pos.coords.latitude;
     const lon = pos.coords.longitude;
 
-    // Obter o IP externo
-    let ip = '';
-    try {
-        const res = await fetch('https://api.ipify.org?format=json');
-        const data = await res.json();
-        ip = data.ip;
-    } catch (err) {
-        console.error('Erro ao obter IP:', err);
-    }
-
-    // Enviar ao backend
+    // Enviar ao backend sem o IP (será capturado no backend)
     fetch('/localizacoes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-            ip,     
             latitude: lat, 
             longitude: lon 
         })
@@ -32,6 +21,7 @@ async function success(pos) {
         }
     }).catch(err => console.error('Erro ao enviar localização:', err));
 }
+
 
 function error(err) {
     console.warn(`Erro ao obter localização: ${err.message}`);
@@ -62,8 +52,8 @@ function iniciarSlideshow() {
 
     const imagens = [
         'src/img/01.jpg',
-        'src/img/02.jpg',
-        'src/img/03.jpg',
+        'src/img/02.png',
+        'src/img/03.png',
         'src/img/04.jpg',
     ];
 

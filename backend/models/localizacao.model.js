@@ -1,4 +1,3 @@
-// models/Localizacao.js
 module.exports = (sequelize, DataTypes) => {
     const Localizacao = sequelize.define('Localizacao', {
       ip: {
