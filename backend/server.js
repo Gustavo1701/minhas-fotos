@@ -5,7 +5,7 @@ const routes = require('./routes/localizacao.routes.js'); // ajuste conforme sua
 const db = require('../backend/config/db.config.js'); // conexão com o banco de dados
 
 const app = express();
-const PORT = 4000;
+const PORT = process.env.PORT || 4000;
 
 // Middlewares
 app.use(cors()); // permite requisições de outros domínios (como seu frontend)
