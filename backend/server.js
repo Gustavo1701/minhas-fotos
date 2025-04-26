@@ -1,31 +1,34 @@
 const express = require('express');
 const cors = require('cors');
-const bodyParser = require('body-parser');
 const routes = require('./routes/localizacao.routes.js');
-const db = require('../backend/config/db.config.js');
+const db = require('./config/db.config.js');
 
 const app = express();
-const port = process.env.PORT || 4000;
+const PORT = process.env.PORT || 4000;
 
 // Middlewares
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json()); // substitui body-parser
 
 // Rotas
 app.use('/localizacoes', routes);
 
-// Verifica a conexão com o banco de dados e inicia o servidor
-db.sequelize.authenticate()
-  .then(() => {
-    console.log('Conexão com o banco de dados foi bem-sucedida!');
-    db.sequelize.sync().then(() => {
-      app.listen(port, () => {
-        console.log(`Servidor rodando na porta ${port}`);
-      });
-    }).catch((error) => {
-      console.error('Erro ao sincronizar o banco de dados:', error);
+// Função para iniciar o servidor
+const startServer = async () => {
+  try {
+    await db.sequelize.authenticate();
+    console.log('✅ Conexão com o banco de dados foi bem-sucedida!');
+    
+    await db.sequelize.sync(); // { alter: true } ou { force: true } se desejar
+    console.log('✅ Banco de dados sincronizado.');
+
+    app.listen(PORT, () => {
+      console.log(`🚀 Servidor rodando na porta ${PORT}`);
     });
-  })
-  .catch((error) => {
-    console.error('Não foi possível conectar ao banco de dados:', error);
-  });
+  } catch (error) {
+    console.error('❌ Erro ao iniciar o servidor:', error);
+    process.exit(1); // importante para o Heroku entender que falhou
+  }
+};
+
+startServer();
