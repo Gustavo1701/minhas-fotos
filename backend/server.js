@@ -9,9 +9,11 @@ const PORT = process.env.PORT || 4000;
 
 const Localizacao = db.sequelize.models.Localizacao;
 
+
 // Middlewares
 app.use(cors());
 app.use(express.json()); // substitui body-parser
+app.use('/img', express.static(path.join(__dirname, '../frontend/src/img')));
 
 // Serve arquivos estáticos da pasta 'frontend' (caminho absoluto)
 app.use(express.static(path.join(__dirname, '../frontend')));
