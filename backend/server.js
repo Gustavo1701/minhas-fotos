@@ -23,12 +23,17 @@ app.post('/localizacoes', async (req, res) => {
   const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
   const { latitude, longitude } = req.body;
 
-  console.log('IP recebido no backend:', ip);
+  // Pega apenas o primeiro IP (o mais relevante, único da máquina)
+  const ipUnico = ip.split(',')[0].trim();
+
+  console.log('IP original:', ip); // Logs com todos os IPs
+  console.log('IP único (usado para verificação):', ipUnico);
+
   console.log('Latitude:', latitude, 'Longitude:', longitude);
 
   try {
-    // Verificar se já existe uma localização para esse IP
-    let localizacaoExistente = await Localizacao.findOne({ where: { ip } });
+   // Verifica se já existe uma localização registrada para o IP único
+    let localizacaoExistente = await Localizacao.findOne({ where: { ip: ipUnico } });
 
     if (localizacaoExistente) {
       // Atualiza a localização existente
@@ -66,7 +71,7 @@ const startServer = async () => {
   try {
     await db.sequelize.authenticate();
     console.log('✅ Conexão com o banco de dados foi bem-sucedida!');
-    
+
     await db.sequelize.sync(); // { alter: true } ou { force: true } se desejar
     console.log('✅ Banco de dados sincronizado.');
 
