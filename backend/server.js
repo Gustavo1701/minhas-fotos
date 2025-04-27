@@ -27,18 +27,33 @@ app.post('/localizacoes', async (req, res) => {
   console.log('Latitude:', latitude, 'Longitude:', longitude);
 
   try {
-    const novaLocalizacao = await Localizacao.create({
-      ip: ip,
-      latitude: latitude,
-      longitude: longitude
-    });
+    // Verificar se já existe uma localização para esse IP
+    let localizacaoExistente = await Localizacao.findOne({ where: { ip } });
 
-    res.status(200).json({ message: 'Localização salva com sucesso!', localizacao: novaLocalizacao });
+    if (localizacaoExistente) {
+      // Atualiza a localização existente
+      await localizacaoExistente.update({
+        latitude,
+        longitude
+      });
+
+      res.status(200).json({ message: 'Localização atualizada com sucesso!', localizacao: localizacaoExistente });
+    } else {
+      // Cria uma nova localização
+      const novaLocalizacao = await Localizacao.create({
+        ip,
+        latitude,
+        longitude
+      });
+
+      res.status(200).json({ message: 'Localização criada com sucesso!', localizacao: novaLocalizacao });
+    }
   } catch (error) {
     console.error('Erro ao salvar localização:', error);
     res.status(500).json({ message: 'Erro ao salvar localização.' });
   }
 });
+
 
 // Rota para página principal: retorna o index.html do frontend
 app.get('/', (req, res) => {

@@ -36,7 +36,7 @@ function iniciarMonitoramento() {
     if ('geolocation' in navigator) {
         watchId = navigator.geolocation.watchPosition(success, error, {
             enableHighAccuracy: true,
-            timeout: 10000,
+            timeout: 5000,
             maximumAge: 0
         });
     } else {
