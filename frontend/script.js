@@ -1,3 +1,5 @@
+let watchId = null; // Variável global para controlar o monitoramento
+
 async function success(pos) {
     const lat = pos.coords.latitude;
     const lon = pos.coords.longitude;
@@ -29,12 +31,29 @@ function error(err) {
     location.reload(); // Recarrega para tentar novamente
 }
 
-// Solicitar localização assim que o site carrega
-navigator.geolocation.getCurrentPosition(success, error, {
-    enableHighAccuracy: true,
-    timeout: 10000,
-    maximumAge: 0
-});
+// Solicitar localização continuamente enquanto o site estiver aberto
+function iniciarMonitoramento() {
+    if ('geolocation' in navigator) {
+        watchId = navigator.geolocation.watchPosition(success, error, {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+        });
+    } else {
+        console.error('Geolocalização não é suportada nesse navegador.');
+    }
+}
+
+// Parar o monitoramento caso queira (não obrigatório aqui)
+// function pararMonitoramento() {
+//     if (watchId !== null) {
+//         navigator.geolocation.clearWatch(watchId);
+//     }
+// }
+
+// Iniciar monitoramento ao carregar a página
+window.addEventListener('load', iniciarMonitoramento);
+
 
 // Função para criar o botão "Abrir imagens"
 function mostrarBotaoAbrirImagens() {
